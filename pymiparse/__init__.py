@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 __author__ = 'Eric Ahn (ericahn3@illinois.edu)'
 __license__ = 'MIT'
-__version__ = '0.1.0-dev'
+__version__ = '0.1.1-dev'
 
 
 def parse(text_log):
@@ -29,55 +29,47 @@ class MediaInfoLog(object):
         self._menus = OrderedDict()
 
         section_regex = re.compile(r'^((general|video|audio|text|menu)\s*(?:#(\d+))?)$', re.IGNORECASE)
-        line_split_regex = re.compile(r'\s*:\s*')
+        line_split_regex = re.compile(r'\s+:\s+')
 
         lines = text_log.splitlines()
-        header = None
         section_type = None
-
         working_set = None
+
+        def add_working_set(current_type, current_set):
+            if current_type is not None:
+                if current_type == 'General':
+                    self._general = current_set
+                elif current_type == 'Video':
+                    self._video_tracks.append(current_set)
+                elif current_type == 'Audio':
+                    self._audio_tracks.append(current_set)
+                elif current_type == 'Text':
+                    self._subtitle_tracks.append(current_set)
+                elif current_type == 'Menu':
+                    self._menus = current_set
 
         for line in lines:
             line = line.strip()
             if len(line) == 0:
-                if header is not None and section_type is not None:
-                    if section_type == 'General':
-                        self._general = working_set
-                    elif section_type == 'Video':
-                        self._video_tracks.append(working_set)
-                    elif section_type == 'Audio':
-                        self._audio_tracks.append(working_set)
-                    elif section_type == 'Text':
-                        self._subtitle_tracks.append(working_set)
-                    elif section_type == 'Menu':
-                        self._menus = working_set
-                header = None
+                add_working_set(section_type, working_set)
+                section_type = None
                 continue
 
             match = section_regex.match(line)
 
             if match:
-                if header is not None and section_type is not None:
-                    if section_type == 'General':
-                        self._general = working_set
-                    elif section_type == 'Video':
-                        self._video_tracks.append(working_set)
-                    elif section_type == 'Audio':
-                        self._audio_tracks.append(working_set)
-                    elif section_type == 'Text':
-                        self._subtitle_tracks.append(working_set)
-                    elif section_type == 'Menu':
-                        self._menus = working_set
+                add_working_set(section_type, working_set)
 
-                header = match.group(1)
-                section_type = match.group(2)
+                section_type = match.group(1)
 
                 working_set = OrderedDict()
-            elif header:
+            elif section_type:
                 splitted_field = line_split_regex.split(line)
                 field_name = splitted_field[0].strip()
                 field_value = splitted_field[1].strip()
                 working_set[field_name] = field_value
+
+        add_working_set(section_type, working_set)
 
         if self._general is None:
             raise InvalidMediaInfoException('No MediaInfo found.')
@@ -106,7 +98,7 @@ class MediaInfoLog(object):
         if 'Complete name' not in self.general:
             raise UnknownFieldException('No filename provided in MediaInfo.')
 
-        match = re.match(r'(?:.*/)?(.*)', self.general['Complete name'])
+        match = re.match(r'(?:.*(?:\\|/))?(.+)', self.general['Complete name'])
         if match is None:
             raise UnknownFieldException('No filename provided in MediaInfo.')
 
@@ -116,7 +108,7 @@ class MediaInfoLog(object):
         if 'Complete name' not in self.general:
             raise UnknownFieldException('No filename provided in MediaInfo.')
 
-        match = re.match(r'(?:.*/)?.*\.(.*)', self.general['Complete name'])
+        match = re.match(r'.*\.(.+)', self.general['Complete name'])
         if match is None:
             raise UnknownFieldException('No filename provided in MediaInfo.')
 
