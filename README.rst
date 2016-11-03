@@ -1,6 +1,18 @@
 pymiparse
 =========
 
+.. image:: https://travis-ci.org/wchill/pymiparse.png?branch=master
+        :alt: Build status on Travis
+        :target: https://travis-ci.org/wchill/pymiparse
+
+.. image:: https://img.shields.io/pypi/v/pymiparse.svg?maxAge=86400
+        :alt: PyPI version
+        :target: https://pypi.python.org/pypi/pymiparse
+
+.. image:: https://codecov.io/gh/wchill/pymiparse/branch/master/graph/badge.svg
+        :alt: Codecov Status
+        :target: https://codecov.io/gh/wchill/pymiparse
+
 pymiparse is an easy to use parser for MediaInfo text logs.
 Most current MediaInfo parsing libraries for Python either act as straight wrappers around
 the MediaInfo binary or are only capable of translating XML output from MediaInfo.

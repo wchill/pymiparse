@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 __author__ = 'Eric Ahn (ericahn3@illinois.edu)'
 __license__ = 'MIT'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 def parse(text_log):
@@ -234,6 +234,16 @@ class MediaInfoLog(object):
 
         raise UnknownCodecException('Unknown video codec {}.'.format(codec))
 
+    def get_primary_video_bit_depth(self):
+        if len(self.video_tracks) == 0:
+            raise NoTrackException('No video tracks in file.')
+
+        bit_depth = self.video_tracks[0].get('Bit depth')
+        if bit_depth is None:
+            raise UnknownFieldException('No bit depth field in Mediainfo.')
+
+        return int(re.search(r'(\d+)', bit_depth).group(1))
+
     def get_subtitle_languages(self):
         if len(self.subtitle_tracks) == 0:
             raise NoTrackException('No subtitle tracks in file.')
@@ -244,5 +254,12 @@ class MediaInfoLog(object):
                 languages.add(track.get('Language'))
         return list(languages)
 
-    def is_video_interlaced(self):
-        pass
+    def is_primary_video_interlaced(self):
+        if len(self.video_tracks) == 0:
+            raise NoTrackException('No video tracks in file.')
+
+        video = self.video_tracks[0]
+        scan_type = video.get('Scan type')
+        store_method = video.get('Scan type, store method')
+
+        return scan_type == 'Interlaced' or scan_type == 'MBAFF' or store_method == 'Interleaved fields'
