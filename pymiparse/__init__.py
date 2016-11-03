@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 __author__ = 'Eric Ahn (ericahn3@illinois.edu)'
 __license__ = 'MIT'
-__version__ = '0.1.1-dev'
+__version__ = '0.1.1'
 
 
 def parse(text_log):
@@ -29,7 +29,7 @@ class MediaInfoLog(object):
         self._menus = OrderedDict()
 
         section_regex = re.compile(r'^((general|video|audio|text|menu)\s*(?:#(\d+))?)$', re.IGNORECASE)
-        line_split_regex = re.compile(r'\s+:\s+')
+        line_split_regex = re.compile(r'\s+:\s*')
 
         lines = text_log.splitlines()
         section_type = None
