@@ -65,6 +65,8 @@ class MediaInfoLog(object):
                 working_set = OrderedDict()
             elif section_type:
                 splitted_field = line_split_regex.split(line)
+                if len(splitted_field) == 1:
+                    continue
                 field_name = splitted_field[0].strip()
                 field_value = splitted_field[1].strip()
                 working_set[field_name] = field_value
